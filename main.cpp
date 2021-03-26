@@ -11,6 +11,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <emmintrin.h>
+#include <smmintrin.h>
+#include <xmmintrin.h>
+
 //#define FULLSCREENMODE
 
 struct screen
@@ -115,11 +119,11 @@ int main()
 
 screen GetNewScreen(sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i winsizes)
 {
+    assert(winsizes.x);
+    assert(winsizes.y);
+
     int w = winsizes.x;
     int h = winsizes.y;
-
-    assert(w);
-    assert(h);
 
     screen newscreen;
 
@@ -231,25 +235,29 @@ screen GetNewScreen(sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i wi
 
 void changeBorders (cmplxborder* border, screen newscreen, sf::Vector2i winsizes)
 {
-        double releft  = border->Re_left;
-        double reright = border->Re_right;
-        double imup    = border->Im_up;
-        double imdown  = border->Im_down;
+    assert(border != nullptr);
+    assert(winsizes.x);
+    assert(winsizes.y);
 
-        if (newscreen.zoom > 1)
-        {
-            border->Re_left  = releft + (reright - releft) * newscreen.x1 / winsizes.x;
-            border->Re_right = releft + (reright - releft) * newscreen.x2 / winsizes.x;
-            border->Im_down  = imdown + (imup    - imdown) * newscreen.y1 / winsizes.y;
-            border->Im_up    = imdown + (imup    - imdown) * newscreen.y2 / winsizes.y;
-        }
-        else
-        {
-            border->Re_left  = releft  - (reright - releft) *               newscreen.x1  / (newscreen.x2 - newscreen.x1);
-            border->Re_right = reright + (reright - releft) * (winsizes.x - newscreen.x2) / (newscreen.x2 - newscreen.x1);
-            border->Im_down  = imdown  - (imup    - imdown) *               newscreen.y1  / (newscreen.y2 - newscreen.y1);
-            border->Im_up    = imup    + (imup    - imdown) * (winsizes.y - newscreen.y2) / (newscreen.y2 - newscreen.y1);
-        }
+    double releft  = border->Re_left;
+    double reright = border->Re_right;
+    double imup    = border->Im_up;
+    double imdown  = border->Im_down;
+
+    if (newscreen.zoom > 1)
+    {
+        border->Re_left  = releft + (reright - releft) * newscreen.x1 / winsizes.x;
+        border->Re_right = releft + (reright - releft) * newscreen.x2 / winsizes.x;
+        border->Im_down  = imdown + (imup    - imdown) * newscreen.y1 / winsizes.y;
+        border->Im_up    = imdown + (imup    - imdown) * newscreen.y2 / winsizes.y;
+    }
+    else
+    {
+        border->Re_left  = releft  - (reright - releft) *               newscreen.x1  / (newscreen.x2 - newscreen.x1);
+        border->Re_right = reright + (reright - releft) * (winsizes.x - newscreen.x2) / (newscreen.x2 - newscreen.x1);
+        border->Im_down  = imdown  - (imup    - imdown) *               newscreen.y1  / (newscreen.y2 - newscreen.y1);
+        border->Im_up    = imup    + (imup    - imdown) * (winsizes.y - newscreen.y2) / (newscreen.y2 - newscreen.y1);
+    }
 }
 
 //------------------------------------------------------------------------------
