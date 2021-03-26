@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
     * Description: Program to display mandelbrot set                           *
-    * Created:     1 mar 2020                                                  *
-    * Copyright:   (C) 2020 MIPT                                               *
+    * Created:     1 mar 2021                                                  *
+    * Copyright:   (C) 2021 MIPT                                               *
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
@@ -264,13 +264,15 @@ void DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i
     int width  = winsizes.x;
     int height = winsizes.y;
 
-    for (int x = 0; x <= width;  ++x)
+    for (int x = 0; x <= width; ++x)
+    {
+        double re = border.Re_left + (border.Re_right - border.Re_left) * x/width ;
+        double x2 = re*re;
+
         for (int y = 0; y <= height; ++y)
         {
-            double re = border.Re_left + (border.Re_right - border.Re_left) * x/width ;
-            double im = border.Im_down + (border.Im_up    - border.Im_down) * y/height;
+            double im = border.Im_down + (border.Im_up - border.Im_down) * y/height;
 
-            double x2 = re*re;
             double y2 = im*im;
             double s  = (re + im)*(re + im);
 
@@ -302,6 +304,7 @@ void DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i
             pointmap[y*width + x].position = sf::Vector2f(x, y);
             pointmap[y*width + x].color = color;
         }
+    }
 }
 
 //------------------------------------------------------------------------------
