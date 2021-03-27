@@ -17,7 +17,7 @@
 #include <xmmintrin.h>
 
 
-//#define FULLSCREENMODE
+#define FULLSCREENMODE
 
 struct screen
 {
