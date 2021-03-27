@@ -17,7 +17,7 @@
 #include <xmmintrin.h>
 
 
-#define FULLSCREENMODE
+// #define FULLSCREENMODE
 
 struct screen
 {
@@ -36,7 +36,7 @@ struct cmplxborder
     double Im_down  = 0;
 };
 
-screen    GetNewScreen   (sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i winsizes);
+screen    GetNewScreen   (sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
 void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
 void      changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
 sf::Color getColor       (int32_t itrn, int32_t itrn_max);
@@ -68,6 +68,7 @@ int main()
 
     sf::String title_string = "Mandelbrot Set Plotter";
     sf::RenderWindow window(sf::VideoMode(winsizes.x, winsizes.y), title_string, win_style);
+
     sf::VertexArray pointmap(sf::Points, winsizes.x * winsizes.y);
 
     int itrn = 3000;
@@ -83,9 +84,6 @@ int main()
     border.Re_left  = -(border.Im_up - border.Im_down) * winsizes.x/winsizes.y / 5 *3;
     border.Re_right =  (border.Im_up - border.Im_down) * winsizes.x/winsizes.y / 5 *2;
 
-    sf::Sprite mand_sprite;
-    mand_sprite.setTextureRect(sf::IntRect(0, 0, winsizes.x, winsizes.y));
-    mand_sprite.setPosition(0, 0);
 
     while (window.isOpen())
     {
@@ -95,12 +93,7 @@ int main()
         window.draw(pointmap);
         window.display();
 
-        sf::Texture mand_texture;
-        mand_texture.create(winsizes.x, winsizes.y);
-        mand_texture.update(window);
-        mand_sprite.setTexture(mand_texture);
-
-        screen newscreen = GetNewScreen(window, mand_sprite, winsizes);
+        screen newscreen = GetNewScreen(window, pointmap, winsizes);
         if (newscreen.x1 == -1)
         {
             window.close();
@@ -120,7 +113,7 @@ int main()
 
 //------------------------------------------------------------------------------
 
-screen GetNewScreen(sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i winsizes)
+screen GetNewScreen(sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes)
 {
     assert(winsizes.x);
     assert(winsizes.y);
@@ -186,7 +179,7 @@ screen GetNewScreen(sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i wi
                     rectangle.setSize(sf::Vector2f(end - start));
                     window.draw(rectangle);
                     window.display();
-                    window.draw(sprite);
+                    window.draw(pointmap);
                 }
                 else end.x = -1;
             }
@@ -197,7 +190,6 @@ screen GetNewScreen(sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i wi
             rectangle.setSize(sf::Vector2f(end - start));
             window.draw(rectangle);
             window.display();
-            window.draw(sprite);
             OK = 0;
         }
 
