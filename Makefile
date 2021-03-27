@@ -1,18 +1,17 @@
 ####
 
 CC = g++
-CFLAGS = -c -Wall -O2
+CFLAGS = -c -march=native -msse4.1 -O3
 LDFLAGS =
 LIBS = -lsfml-system -lsfml-graphics -lsfml-window
 SOURCES = main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 EXECUTABLE = Mandelbrot
 
-all: $(SOURCES) $(EXECUTABLE)
+all: $(SOURCES) $(EXECUTABLE) clean
 
 $(EXECUTABLE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $@
-	make clean
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

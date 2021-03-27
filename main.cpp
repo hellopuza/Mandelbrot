@@ -12,8 +12,10 @@
 #include <stdio.h>
 
 #include <emmintrin.h>
+#include <immintrin.h>
 #include <smmintrin.h>
 #include <xmmintrin.h>
+
 
 //#define FULLSCREENMODE
 
@@ -34,9 +36,10 @@ struct cmplxborder
     double Im_down  = 0;
 };
 
-screen GetNewScreen   (sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i winsizes);
-void   DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn, double lim);
-void   changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
+screen    GetNewScreen   (sf::RenderWindow& window, sf::Sprite sprite, sf::Vector2i winsizes);
+void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
+void      changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
+sf::Color getColor       (int32_t itrn, int32_t itrn_max);
 
 const double null = 1e-7;
 
@@ -262,57 +265,99 @@ void changeBorders (cmplxborder* border, screen newscreen, sf::Vector2i winsizes
 
 //------------------------------------------------------------------------------
 
-void DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn, double lim)
+void DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim)
 {
     assert(winsizes.x);
     assert(winsizes.y);
-    assert(itrn);
+    assert(itrn_max);
     assert(lim);
 
     int width  = winsizes.x;
     int height = winsizes.y;
 
-    for (int x = 0; x <= width; ++x)
+    double re_step = (border.Re_right - border.Re_left) / width;
+    double im_step = (border.Im_up    - border.Im_down) / height;
+
+    __m256d _m_lim = _mm256_set1_pd(lim);
+    __m128i ones  = _mm_set1_epi32(1);
+    __m128i zeros = _mm_set1_epi32(0);
+
+	__m128i mask32_128_1 = _mm_setr_epi32(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF );
+	__m128i mask32_128_2 = _mm_setr_epi32(0xFFFFFFFF, 0, 0xFFFFFFFF, 0xFFFFFFFF );
+	__m128i mask32_128_3 = _mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0, 0xFFFFFFFF );
+	__m128i mask32_128_4 = _mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 );
+
+
+    double im0 = border.Im_down;
+    
+    for (int y = 0; y < height; (++y, im0 += im_step))
     {
-        double re = border.Re_left + (border.Re_right - border.Re_left) * x/width ;
-        double x2 = re*re;
+        __m256d _m_im0 = { im0, im0, im0, im0 };
 
-        for (int y = 0; y <= height; ++y)
+        double re0 = border.Re_left;
+
+        for (int x = 0; x < width; (x += 4, re0 += 4*re_step))
         {
-            double im = border.Im_down + (border.Im_up - border.Im_down) * y/height;
+            __m256d _m_re0 = { re0, re0 + re_step, re0 + 2*re_step, re0 + 3*re_step };
 
-            double y2 = im*im;
-            double s  = (re + im)*(re + im);
+            __m256d _m_re2 = _mm256_mul_pd(_m_re0, _m_re0);
+            __m256d _m_im2 = _mm256_mul_pd(_m_im0, _m_im0);
 
-            int i = 0;
+            __m256d _m_s  = _mm256_mul_pd(_mm256_add_pd(_m_re0, _m_im0), _mm256_add_pd(_m_re0, _m_im0));
 
-            for (; (i < itrn) && ((x2 + y2) <= lim); ++i)
+            __m128i iterations = _mm_set1_epi32(0);
+			__m128i iter_mask  = _mm_set1_epi32(0xFFFFFFFF);
+
+            for (int i = 0; i < itrn_max; ++i)
             {
-                double x = x2 - y2 + re;
-                double y = s - x2 - y2 + im;
-                x2 = x*x;
-                y2 = y*y;
-                s = (x + y)*(x + y);
+                __m256d _m_re1 = _mm256_add_pd(_mm256_sub_pd(_m_re2, _m_im2), _m_re0);
+                __m256d _m_im1 = _mm256_add_pd(_mm256_sub_pd(_mm256_sub_pd(_m_s, _m_re2), _m_im2), _m_im0);
+                _m_re2 = _mm256_mul_pd(_m_re1, _m_re1);
+                _m_im2 = _mm256_mul_pd(_m_im1, _m_im1);
+
+                __m256d _m_rad = _mm256_add_pd(_m_re2, _m_im2);
+
+                __m128i rad_cmp = _mm_add_epi32(_mm256_cvtpd_epi32(_mm256_cmp_pd(_m_rad, _m_lim, _CMP_GT_OS)), ones);
+                rad_cmp = _mm_abs_epi32(_mm_cmpgt_epi32(rad_cmp, zeros));
+
+				iterations = _mm_add_epi32(iterations, _mm_and_si128(iter_mask, rad_cmp));
+
+				if (*((int32_t*)&rad_cmp + 0) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_1);
+				if (*((int32_t*)&rad_cmp + 1) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_2);
+				if (*((int32_t*)&rad_cmp + 2) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_3);
+				if (*((int32_t*)&rad_cmp + 3) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_4);
+
+				if (_mm_test_all_zeros(iter_mask, iter_mask)) break;
+
+                _m_s  = _mm256_mul_pd(_mm256_add_pd(_m_re1, _m_im1), _mm256_add_pd(_m_re1, _m_im1));
             }
 
-            sf::Color color;
-            if (i < itrn)
+            for (int i = 0; i < 4; ++i)
             {
-                i = i*4 % 1530;
-
-                     if (i < 256 ) color = sf::Color( 255,    i,      0       );
-                else if (i < 511 ) color = sf::Color( 510-i,  255,    0       );
-                else if (i < 766 ) color = sf::Color( 0,      255,    i - 510 );
-                else if (i < 1021) color = sf::Color( 0,      1020-i, 255     );
-                else if (i < 1276) color = sf::Color( i-1020, 0,      255     );
-                else if (i < 1530) color = sf::Color( 255,    0,      1529-i  );
+                pointmap[y*width + x + i].position = sf::Vector2f(x + i, y);
+                pointmap[y*width + x + i].color = getColor(*((int32_t*)&iterations + i), itrn_max);
             }
-            else color = sf::Color( 0, 0, 0 );
-
-            pointmap[y*width + x].position = sf::Vector2f(x, y);
-            pointmap[y*width + x].color = color;
         }
     }
+}
+
+//------------------------------------------------------------------------------
+
+sf::Color getColor (int32_t itrn, int32_t itrn_max)
+{
+    if (itrn < itrn_max)
+    {
+        itrn = itrn*4 % 1530;
+
+             if (itrn < 256 ) return sf::Color( 255,      itrn,      0         );
+        else if (itrn < 511 ) return sf::Color( 510-itrn, 255,       0         );
+        else if (itrn < 766 ) return sf::Color( 0,        255,       itrn-510  );
+        else if (itrn < 1021) return sf::Color( 0,        1020-itrn, 255       );
+        else if (itrn < 1276) return sf::Color( itrn-1020, 0,        255       );
+        else if (itrn < 1530) return sf::Color( 255,       0,        1529-itrn );
+    }
+
+    return sf::Color( 0, 0, 0 );
 }
 
 //------------------------------------------------------------------------------
