@@ -7,6 +7,8 @@
     * GitHub:      https://github.com/hellopuza                                *
     *///------------------------------------------------------------------------
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <SFML/Graphics.hpp>
 #include <assert.h>
 #include <stdio.h>
@@ -36,10 +38,11 @@ struct cmplxborder
     double Im_down  = 0;
 };
 
-screen    GetNewScreen   (sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
+int       GetNewScreen   (screen* newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
 void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
 void      changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
 sf::Color getColor       (int32_t itrn, int32_t itrn_max);
+void      savePict       (sf::RenderWindow& window);
 
 const double null = 1e-7;
 
@@ -93,8 +96,8 @@ int main()
         window.draw(pointmap);
         window.display();
 
-        screen newscreen = GetNewScreen(window, pointmap, winsizes);
-        if (newscreen.x1 == -1)
+        screen newscreen;
+        if (GetNewScreen(&newscreen, window, pointmap, winsizes))
         {
             window.close();
             return 0;
@@ -113,7 +116,7 @@ int main()
 
 //------------------------------------------------------------------------------
 
-screen GetNewScreen(sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes)
+int GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes)
 {
     assert(winsizes.x);
     assert(winsizes.y);
@@ -121,7 +124,7 @@ screen GetNewScreen(sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vect
     int w = winsizes.x;
     int h = winsizes.y;
 
-    screen newscreen;
+    char was_screenshot = 0;
 
     sf::Vector2i start(-1, -1);
     sf::Vector2i end  (-1, -1);
@@ -130,15 +133,12 @@ screen GetNewScreen(sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vect
     rectangle.setOutlineThickness(1);
     rectangle.setFillColor(sf::Color::Transparent);
 
-    int OK = 1;
-
-    while (OK)
+    while (1)
     {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
         {
             start = sf::Mouse::getPosition(window);
             rectangle.setPosition(start.x, start.y);
-            sf::sleep(sf::milliseconds(1));
 
             while (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
             {
@@ -168,62 +168,66 @@ screen GetNewScreen(sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vect
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         rectangle.setOutlineColor(sf::Color::Blue);
-                        newscreen.zoom = (double)w*h/abs(end.x - start.x)/abs(end.y - start.y);
+                        newscreen->zoom = (double)w*h/abs(end.x - start.x)/abs(end.y - start.y);
                     }
                     else if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
                     {
                         rectangle.setOutlineColor(sf::Color::Red);
-                        newscreen.zoom = (double)abs(end.x - start.x)*abs(end.y - start.y)/w/h;
+                        newscreen->zoom = (double)abs(end.x - start.x)*abs(end.y - start.y)/w/h;
                     }
 
                     rectangle.setSize(sf::Vector2f(end - start));
+                    window.draw(pointmap);
                     window.draw(rectangle);
                     window.display();
-                    window.draw(pointmap);
                 }
                 else end.x = -1;
             }
         }
 
+        window.draw(pointmap);
+
         if (not (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) && (end.x != -1))
-        {
-            rectangle.setSize(sf::Vector2f(end - start));
-            window.draw(rectangle);
-            window.display();
-            OK = 0;
-        }
+            break;
 
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape) return newscreen;
+            if ((event.key.code == sf::Keyboard::Enter) && ! (was_screenshot))
+            {
+                savePict(window);
+                was_screenshot = 1;
+                break;
+            }
+
+            if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape) return 1;
         }
     }
 
 
     if (start.x > end.x)
     {
-        newscreen.x2 = start.x;
-        newscreen.x1 = end.x;
+        newscreen->x2 = start.x;
+        newscreen->x1 = end.x;
     }
     else
     {
-        newscreen.x1 = start.x;
-        newscreen.x2 = end.x;
+        newscreen->x1 = start.x;
+        newscreen->x2 = end.x;
     }
 
     if (start.y > end.y)
     {
-        newscreen.y2 = start.y;
-        newscreen.y1 = end.y;
+        newscreen->y2 = start.y;
+        newscreen->y1 = end.y;
     }
     else
     {
-        newscreen.y1 = start.y;
-        newscreen.y2 = end.y;
+        newscreen->y1 = start.y;
+        newscreen->y2 = end.y;
     }
 
-    return newscreen;
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -350,6 +354,43 @@ sf::Color getColor (int32_t itrn, int32_t itrn_max)
     }
 
     return sf::Color( 0, 0, 0 );
+}
+
+//------------------------------------------------------------------------------
+
+void savePict (sf::RenderWindow& window)
+{
+    static int shot_num = 0;
+    char filename[256] = "screenshot";
+    char shot_num_str[13] = "";
+    sprintf(shot_num_str, "%d", shot_num++);
+
+    strcat(filename, "(");
+    strcat(filename, shot_num_str);
+    strcat(filename, ")");
+    strcat(filename, ".png");
+
+    sf::Texture screen;
+    screen.create(window.getSize().x, window.getSize().y);
+    screen.update(window);
+
+    sf::RectangleShape rectangle;
+    rectangle.setPosition(0, 0);
+    rectangle.setSize(sf::Vector2f(window.getSize()));
+
+    if (screen.copyToImage().saveToFile(filename))
+        rectangle.setFillColor(sf::Color(10, 10, 10, 150));  // grey screen if ok
+    else
+        rectangle.setFillColor(sf::Color(255, 10, 10, 200)); // red screen if error
+
+    window.draw(rectangle);
+    window.display();
+
+    sf::sleep(sf::milliseconds(300));
+
+    sf::Sprite sprite(screen);
+    window.draw(sprite);
+    window.display();
 }
 
 //------------------------------------------------------------------------------
