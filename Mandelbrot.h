@@ -14,12 +14,15 @@
 #include <SFML/Graphics.hpp>
 #include <assert.h>
 #include <string.h>
+#include <omp.h>
 
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
 #include <xmmintrin.h>
 
+const int DEFAULT_WIDTH  = 640;
+const int DEFAULT_HEIGHT = 480;
 
 struct screen
 {
@@ -44,22 +47,24 @@ class Mandelbrot
 {
 public:
 
-    Mandelbrot (size_t width, size_t height, char fullscreen_mode);
+    Mandelbrot (size_t width, size_t height);
+    Mandelbrot (char fullscreen_mode);
    ~Mandelbrot ();
 
     void run();
 
 private:
 
-    sf::RenderWindow *window;
-    cmplxborder       mand_border;
-    sf::Vector2i      window_sizes;
+    sf::RenderWindow *window_;
+    cmplxborder       border_;
+    sf::Vector2i      winsizes_;
 
-    size_t delta_zoom;
-    double mand_lim;
-    size_t mand_itrn_max;
+    size_t delta_zoom_;
+    double lim_;
+    size_t itrn_max_;
 
-    void initWindow(size_t width, size_t height, char fullscreen_mode);
+    void initMandConfig();
+    void createWindow(size_t width, size_t height, sf::Uint32 win_style);
 
     int       GetNewScreen   (screen* newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
     void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
