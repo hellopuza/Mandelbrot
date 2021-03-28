@@ -312,14 +312,14 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
                 __m128i rad_cmp = _mm_add_epi32(_mm256_cvtpd_epi32(_mm256_cmp_pd(_m_rad, _m_lim, _CMP_GT_OS)), ones);
                 rad_cmp = _mm_abs_epi32(_mm_cmpgt_epi32(rad_cmp, zeros));
 
-				iterations = _mm_add_epi32(iterations, _mm_and_si128(iter_mask, rad_cmp));
+                iterations = _mm_add_epi32(iterations, _mm_and_si128(iter_mask, rad_cmp));
 
-				if (*((int32_t*)&rad_cmp + 0) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_1);
-				if (*((int32_t*)&rad_cmp + 1) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_2);
-				if (*((int32_t*)&rad_cmp + 2) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_3);
-				if (*((int32_t*)&rad_cmp + 3) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_4);
+                if (*((int32_t*)&rad_cmp + 0) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_1);
+                if (*((int32_t*)&rad_cmp + 1) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_2);
+                if (*((int32_t*)&rad_cmp + 2) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_3);
+                if (*((int32_t*)&rad_cmp + 3) == 0) iter_mask = _mm_and_si128(iter_mask, mask32_128_4);
 
-				if (_mm_test_all_zeros(iter_mask, iter_mask)) break;
+                if (_mm_test_all_zeros(iter_mask, iter_mask)) break;
 
                 _m_s  = _mm256_mul_pd(_mm256_add_pd(_m_re1, _m_im1), _mm256_add_pd(_m_re1, _m_im1));
             }
