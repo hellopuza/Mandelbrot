@@ -11,8 +11,8 @@
 
 int main()
 {
-    Mandelbrot Benoit(640, 480);
-    //Mandelbrot Benoit(1);
+    //Mandelbrot Benoit(640, 480);
+    Mandelbrot Benoit(1);
 
     Benoit.run();
     

@@ -41,8 +41,8 @@ Mandelbrot::Mandelbrot (char fullscreen_mode):
 
         createWindow(winsizes_.x, winsizes_.y, sf::Style::Fullscreen);
     }
-
-    createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
+    else
+        createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
 
     initMandConfig();
 }
@@ -188,14 +188,33 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if ((event.key.code == sf::Keyboard::Enter) && ! (was_screenshot))
+            switch (event.type)
             {
-                savePict(window);
-                was_screenshot = 1;
+            case sf::Event::Closed:
+                return 1;
+                break;
+
+            default:
                 break;
             }
 
-            if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape) return 1;
+            switch (event.key.code)
+            {
+            case sf::Keyboard::Escape:
+                return 1;
+                break;
+
+            case sf::Keyboard::Enter:
+                if (!was_screenshot)
+                {
+                    savePict(window);
+                    was_screenshot = 1;
+                }
+                break;
+
+            default:
+                break;
+            }
         }
     }
 
