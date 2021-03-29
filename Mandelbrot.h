@@ -47,8 +47,9 @@ class Mandelbrot
 {
 public:
 
-    Mandelbrot (size_t width, size_t height);
+    Mandelbrot ();
     Mandelbrot (char fullscreen_mode);
+    Mandelbrot (size_t width, size_t height);
    ~Mandelbrot ();
 
     void run();

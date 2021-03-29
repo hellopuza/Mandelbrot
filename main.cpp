@@ -9,12 +9,25 @@
 
 #include "Mandelbrot.h"
 
-int main()
-{
-    //Mandelbrot Benoit(640, 480);
-    Mandelbrot Benoit(1);
+//------------------------------------------------------------------------------
 
-    Benoit.run();
+int main(int argc, char* argv[])
+{
+    if (argc == 1) // default window sizes
+    {
+        Mandelbrot Benoit;
+        Benoit.run();
+    }
+    if (argc == 2) // fullscreen or default window sizes
+    {
+        Mandelbrot Benoit(atoi(argv[1]));
+        Benoit.run();
+    }
+    if (argc == 3) // custom window sizes
+    {
+        Mandelbrot Benoit(atoi(argv[1]), atoi(argv[2]));
+        Benoit.run();
+    }
     
     return 0;
 }

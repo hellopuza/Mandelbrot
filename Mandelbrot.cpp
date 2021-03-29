@@ -12,9 +12,18 @@
 
 //------------------------------------------------------------------------------
 
+Mandelbrot::Mandelbrot () :
+    winsizes_ ({DEFAULT_WIDTH, DEFAULT_HEIGHT})
+{
+    createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
+
+    initMandConfig();
+}
+
+//------------------------------------------------------------------------------
+
 Mandelbrot::Mandelbrot (size_t width, size_t height)
 {
-    assert(this);
     assert(width);
     assert(height);
 
@@ -31,7 +40,7 @@ Mandelbrot::Mandelbrot (size_t width, size_t height)
 
 //------------------------------------------------------------------------------
 
-Mandelbrot::Mandelbrot (char fullscreen_mode):
+Mandelbrot::Mandelbrot (char fullscreen_mode) :
     winsizes_ ({DEFAULT_WIDTH, DEFAULT_HEIGHT})
 {
     if (fullscreen_mode)
@@ -60,7 +69,7 @@ void Mandelbrot::createWindow(size_t width, size_t height, sf::Uint32 win_style)
 
 void Mandelbrot::initMandConfig()
 {
-    delta_zoom_ = 4500;
+    delta_zoom_ = 3500;
     lim_        = 100;
     itrn_max_   = 3000;
 
