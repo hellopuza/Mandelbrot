@@ -39,7 +39,7 @@ $ ./Mandelbrot < 123 456
 
 **How to use**
 
-- Zoom in: draw a rectangle with the left mouse button in the area you want to zoom in. The rectangle will be blue.
-- Zoom out: draw a rectangle with the right mouse button in the area you want to zoom out. The rectangle will be red.
-- Take a screenshot: Press Enter. The screenshot will be saved as "screenshot(<number>).png" in your directory.
-- Exit the program: Press Esc or close window.
+- **Zoom in:** draw a rectangle with the left mouse button in the area you want to zoom in. The rectangle will be blue.
+- **Zoom out:** draw a rectangle with the right mouse button in the area you want to zoom out. The rectangle will be red.
+- **Take a screenshot:** Press Enter. The screenshot will be saved as "screenshot(<number>).png" in your directory.
+- **Exit the program:** Press Esc or close window.
