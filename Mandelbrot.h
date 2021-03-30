@@ -2,11 +2,11 @@
     * File:        Mandelbrot.h                                                *
     * Description: Declaration of functions and data types used to display     *
                    the mandelbrot set                                          *
-    * Created:     1 apr 2021                                                  *
-    * Copyright:   (C) 2021 Artem Puzankov                                     *
+    * Created:     27 mar 2021                                                 *
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
+    * Copyright © 2021 Artem Puzankov. All rights reserved.                    *
     *///------------------------------------------------------------------------
 
 #define _CRT_SECURE_NO_WARNINGS

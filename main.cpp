@@ -1,10 +1,11 @@
 /*------------------------------------------------------------------------------
-    * Description: Program to display mandelbrot set                           *
-    * Created:     1 apr 2021                                                  *
-    * Copyright:   (C) 2021 Artem Puzankov                                     *
+    * File:        main.cpp                                                    *
+    * Description: Program to display the mandelbrot set                       *
+    * Created:     27 mar 2021                                                 *
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
+    * Copyright © 2021 Artem Puzankov. All rights reserved.                    *
     *///------------------------------------------------------------------------
 
 #include "Mandelbrot.h"
