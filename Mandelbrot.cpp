@@ -323,10 +323,10 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
             __m256d _m_re2 = _mm256_mul_pd(_m_re0, _m_re0);
             __m256d _m_im2 = _mm256_mul_pd(_m_im0, _m_im0);
 
-            __m256d _m_s  = _mm256_mul_pd(_mm256_add_pd(_m_re0, _m_im0), _mm256_add_pd(_m_re0, _m_im0));
+            __m256d _m_s = _mm256_mul_pd(_mm256_add_pd(_m_re0, _m_im0), _mm256_add_pd(_m_re0, _m_im0));
 
             __m128i iterations = _mm_set1_epi32(0);
-			__m128i iter_mask  = _mm_set1_epi32(0xFFFFFFFF);
+            __m128i iter_mask  = _mm_set1_epi32(0xFFFFFFFF);
 
             for (int i = 0; i < itrn_max; ++i)
             {
@@ -335,9 +335,9 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
                 _m_re2 = _mm256_mul_pd(_m_re1, _m_re1);
                 _m_im2 = _mm256_mul_pd(_m_im1, _m_im1);
 
-                __m256d _m_rad = _mm256_add_pd(_m_re2, _m_im2);
+                __m256d _m_rad2 = _mm256_add_pd(_m_re2, _m_im2);
 
-                __m128i rad_cmp = _mm_add_epi32(_mm256_cvtpd_epi32(_mm256_cmp_pd(_m_rad, _m_lim, _CMP_GT_OS)), ones);
+                __m128i rad_cmp = _mm_add_epi32(_mm256_cvtpd_epi32(_mm256_cmp_pd(_m_rad2, _m_lim, _CMP_GT_OS)), ones);
                 rad_cmp = _mm_abs_epi32(_mm_cmpgt_epi32(rad_cmp, zeros));
 
                 iterations = _mm_add_epi32(iterations, _mm_and_si128(iter_mask, rad_cmp));
