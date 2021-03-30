@@ -2,7 +2,7 @@
 
 ![screenshot](picts/8.png "Screenshot")
 
-I wrote a simple program let's you view the Mandelbrot Set and zoom in.
+I wrote a simple program that let's you view the Mandelbrot Set and zoom in.
 
 **Features**
 
