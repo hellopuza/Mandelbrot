@@ -31,10 +31,10 @@ $ make
 $ ./Mandelbrot
 
 # if you want to create fullscreen window
-$ ./Mandelbrot < 1
+$ ./Mandelbrot 1
 
 # if you want to create window with custom sizes
-$ ./Mandelbrot < 123 456
+$ ./Mandelbrot 123 456
 ```
 
 **How to use**
