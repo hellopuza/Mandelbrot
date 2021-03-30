@@ -3,7 +3,7 @@
     * Description: Declaration of functions and data types used to display     *
                    the mandelbrot set                                          *
     * Created:     1 apr 2021                                                  *
-    * Copyright:   (C) 2021 MIPT                                               *
+    * Copyright:   (C) 2021 Artem Puzankov                                     *
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
