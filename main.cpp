@@ -19,16 +19,19 @@ int main(int argc, char* argv[])
         Mandelbrot Benoit;
         Benoit.run();
     }
+    else
     if (argc == 2) // fullscreen or default window sizes
     {
         Mandelbrot Benoit(atoi(argv[1]));
         Benoit.run();
     }
+    else
     if (argc == 3) // custom window sizes
     {
         Mandelbrot Benoit(atoi(argv[1]), atoi(argv[2]));
         Benoit.run();
     }
+    else printf("Wrong input parameters!\n");
     
     return 0;
 }

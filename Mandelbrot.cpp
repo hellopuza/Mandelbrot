@@ -133,6 +133,16 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
     rectangle.setOutlineThickness(1);
     rectangle.setFillColor(sf::Color::Transparent);
 
+#ifdef __linux__ 
+
+    sf::Texture screen;
+    screen.create(w, h);
+    screen.update(window);
+
+    sf::Sprite sprite(screen);
+
+#endif // __linux__
+
     while (1)
     {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
@@ -177,15 +187,19 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
                     }
 
                     rectangle.setSize(sf::Vector2f(end - start));
+
+                    #ifdef __linux__ 
+                    window.draw(sprite);
+                    #else                     
                     window.draw(pointmap);
+                    #endif // __linux__
+
                     window.draw(rectangle);
                     window.display();
                 }
                 else end.x = -1;
             }
         }
-
-        window.draw(pointmap);
 
         if (not (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) && (end.x != -1))
             break;
