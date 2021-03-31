@@ -5,7 +5,7 @@
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
-    * Copyright © 2021 Artem Puzankov. All rights reserved.                    *
+    * Copyright ï¿½ 2021 Artem Puzankov. All rights reserved.                    *
     *///------------------------------------------------------------------------
 
 #include "Mandelbrot.h"
@@ -207,32 +207,14 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
         sf::Event event;
         while (window.pollEvent(event))
         {
-            switch (event.type)
-            {
-            case sf::Event::Closed:
+            if ( ( event.type == sf::Event::Closed) || 
+                 ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
                 return 1;
-                break;
 
-            default:
-                break;
-            }
-
-            switch (event.key.code)
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Enter) && (! was_screenshot))
             {
-            case sf::Keyboard::Escape:
-                return 1;
-                break;
-
-            case sf::Keyboard::Enter:
-                if (!was_screenshot)
-                {
-                    savePict(window);
-                    was_screenshot = 1;
-                }
-                break;
-
-            default:
-                break;
+                savePict(window);
+                was_screenshot = 1;
             }
         }
     }
