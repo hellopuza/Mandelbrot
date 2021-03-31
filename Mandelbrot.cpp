@@ -133,7 +133,7 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
     rectangle.setOutlineThickness(1);
     rectangle.setFillColor(sf::Color::Transparent);
 
-#ifdef __linux__ 
+#ifdef __linux__
 
     sf::Texture screen;
     screen.create(w, h);
@@ -188,7 +188,7 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
 
                     rectangle.setSize(sf::Vector2f(end - start));
 
-                    #ifdef __linux__ 
+                    #ifdef __linux__
                     window.draw(sprite);
                     #else                     
                     window.draw(pointmap);
@@ -200,6 +200,12 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
                 else end.x = -1;
             }
         }
+
+        #ifdef __linux__
+        window.draw(sprite);
+        #else                     
+        window.draw(pointmap);
+        #endif // __linux__
 
         if (not (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) && (end.x != -1))
             break;
