@@ -311,10 +311,10 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
     __m128i ones  = _mm_set1_epi32(1);
     __m128i zeros = _mm_set1_epi32(0);
 
-    __m128i mask32_128_1 = _mm_setr_epi32(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF );
-    __m128i mask32_128_2 = _mm_setr_epi32(0xFFFFFFFF, 0, 0xFFFFFFFF, 0xFFFFFFFF );
-    __m128i mask32_128_3 = _mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0, 0xFFFFFFFF );
-    __m128i mask32_128_4 = _mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 );
+    __m128i mask32_128_1 = _mm_setr_epi32( 0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF );
+    __m128i mask32_128_2 = _mm_setr_epi32( 0xFFFFFFFF, 0, 0xFFFFFFFF, 0xFFFFFFFF );
+    __m128i mask32_128_3 = _mm_setr_epi32( 0xFFFFFFFF, 0xFFFFFFFF, 0, 0xFFFFFFFF );
+    __m128i mask32_128_4 = _mm_setr_epi32( 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 );
 
 
     double im0 = border.Im_down;
@@ -379,12 +379,12 @@ sf::Color Mandelbrot::getColor (int32_t itrn, int32_t itrn_max)
     {
         itrn = itrn*4 % 1530;
 
-             if (itrn < 256 ) return sf::Color( 255,      itrn,      0         );
-        else if (itrn < 511 ) return sf::Color( 510-itrn, 255,       0         );
-        else if (itrn < 766 ) return sf::Color( 0,        255,       itrn-510  );
-        else if (itrn < 1021) return sf::Color( 0,        1020-itrn, 255       );
-        else if (itrn < 1276) return sf::Color( itrn-1020, 0,        255       );
-        else if (itrn < 1530) return sf::Color( 255,       0,        1529-itrn );
+             if (itrn < 256 ) return sf::Color( 255,       itrn,      0         );
+        else if (itrn < 511 ) return sf::Color( 510-itrn,  255,       0         );
+        else if (itrn < 766 ) return sf::Color( 0,         255,       itrn-510  );
+        else if (itrn < 1021) return sf::Color( 0,         1020-itrn, 255       );
+        else if (itrn < 1276) return sf::Color( itrn-1020, 0,         255       );
+        else if (itrn < 1530) return sf::Color( 255,       0,         1529-itrn );
     }
 
     return sf::Color( 0, 0, 0 );
