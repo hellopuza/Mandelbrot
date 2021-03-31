@@ -15,7 +15,7 @@
 Mandelbrot::Mandelbrot () :
     winsizes_ ({DEFAULT_WIDTH, DEFAULT_HEIGHT})
 {
-    createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
+    createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
 
     initBorders();
 }
@@ -33,7 +33,7 @@ Mandelbrot::Mandelbrot (size_t width, size_t height)
     winsizes_.x = width;
     winsizes_.y = height;
 
-    createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
+    createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
 
     initBorders();
 }
@@ -48,10 +48,10 @@ Mandelbrot::Mandelbrot (char fullscreen_mode) :
         winsizes_.x = sf::VideoMode::getDesktopMode().width;
         winsizes_.y = sf::VideoMode::getDesktopMode().height;
 
-        createWindow(winsizes_.x, winsizes_.y, sf::Style::Fullscreen);
+        createWindow(winsizes_.x, winsizes_.y, sf::Style::Fullscreen | sf::Style::Close);
     }
     else
-        createWindow(winsizes_.x, winsizes_.y, sf::Style::Default);
+        createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
 
     initBorders();
 }
