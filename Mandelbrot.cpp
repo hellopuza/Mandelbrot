@@ -58,7 +58,7 @@ Mandelbrot::Mandelbrot (char fullscreen_mode) :
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::createWindow(size_t width, size_t height, sf::Uint32 win_style)
+void Mandelbrot::createWindow (size_t width, size_t height, sf::Uint32 win_style)
 {
     sf::String title_string = "Mandelbrot Set Plotter";
     window_ = new sf::RenderWindow(sf::VideoMode(width, height), title_string, win_style);
@@ -67,7 +67,7 @@ void Mandelbrot::createWindow(size_t width, size_t height, sf::Uint32 win_style)
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::initBorders()
+void Mandelbrot::initBorders ()
 {
     border_.Im_up   =  1.3;
     border_.Im_down = -1.3;
@@ -78,7 +78,7 @@ void Mandelbrot::initBorders()
 
 //------------------------------------------------------------------------------
 
-Mandelbrot::~Mandelbrot()
+Mandelbrot::~Mandelbrot ()
 {
     if (window_->isOpen()) window_->close();
     delete window_;
@@ -86,7 +86,7 @@ Mandelbrot::~Mandelbrot()
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::run()
+void Mandelbrot::run ()
 {
     sf::VertexArray pointmap(sf::Points, winsizes_.x * winsizes_.y);
 
@@ -190,7 +190,7 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
 
                     #ifdef __linux__
                     window.draw(sprite);
-                    #else                     
+                    #else
                     window.draw(pointmap);
                     #endif // __linux__
 
@@ -203,7 +203,7 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
 
         #ifdef __linux__
         window.draw(sprite);
-        #else                     
+        #else
         window.draw(pointmap);
         #endif // __linux__
 
@@ -296,8 +296,8 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
     double im_step = (border.Im_up    - border.Im_down) / height;
 
     __m256d _m_lim = _mm256_set1_pd(lim);
-    __m128i ones  = _mm_set1_epi32(1);
-    __m128i zeros = _mm_set1_epi32(0);
+    __m128i ones   = _mm_set1_epi32(1);
+    __m128i zeros  = _mm_set1_epi32(0);
 
     __m128i mask32_128_1 = _mm_setr_epi32( 0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF );
     __m128i mask32_128_2 = _mm_setr_epi32( 0xFFFFFFFF, 0, 0xFFFFFFFF, 0xFFFFFFFF );
