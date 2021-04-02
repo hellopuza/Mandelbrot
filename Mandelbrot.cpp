@@ -201,9 +201,7 @@ int Mandelbrot::GetNewScreen (screen* newscreen, sf::RenderWindow& window, sf::V
             }
         }
 
-        #ifdef __linux__
-        window.draw(sprite);
-        #else
+        #ifndef __linux__
         window.draw(pointmap);
         #endif // __linux__
 
