@@ -311,11 +311,11 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
     {
         __m256d _m_im0 = { im0, im0, im0, im0 };
 
-        double re0 = border.Re_left;
-
         #pragma omp parallel for
-        for (int x = 0; x < width; (x += 4, re0 += 4*re_step))
+        for (int x = 0; x < width; x += 4)
         {
+            double re0 = x * re_step + border.Re_left;
+
             __m256d _m_re0 = { re0, re0 + re_step, re0 + 2*re_step, re0 + 3*re_step };
 
             __m256d _m_re2 = _mm256_mul_pd(_m_re0, _m_re0);
