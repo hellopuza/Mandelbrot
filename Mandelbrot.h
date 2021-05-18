@@ -56,22 +56,23 @@ public:
 
 private:
 
-    sf::RenderWindow *window_;
+    sf::RenderWindow* window_;
     cmplxborder       border_;
     sf::Vector2i      winsizes_;
 
-    size_t delta_zoom_ = 3500;
+    size_t delta_zoom_ = 3000;
     double lim_        = 100;
     size_t itrn_max_   = 3000;
 
     void initBorders ();
     void createWindow (size_t width, size_t height, sf::Uint32 win_style);
 
-    int       GetNewScreen   (screen* newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
+    int       GetNewScreen   (screen& newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
     void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
     void      changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
     sf::Color getColor       (int32_t itrn, int32_t itrn_max);
     void      savePict       (sf::RenderWindow& window);
+    void      PointTrace     (sf::Vector2i point, sf::RenderWindow* window, cmplxborder border, sf::Vector2i winsizes, double lim);
 };
 
 //------------------------------------------------------------------------------

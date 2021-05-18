@@ -90,27 +90,58 @@ void Mandelbrot::run ()
 {
     sf::VertexArray pointmap(sf::Points, winsizes_.x * winsizes_.y);
 
+    DrawMandelbrot(pointmap, border_, winsizes_, itrn_max_, lim_);
+
+    window_->clear();
+    window_->draw(pointmap);
+    window_->display();
+
     while (window_->isOpen())
     {
-        DrawMandelbrot(pointmap, border_, winsizes_, itrn_max_, lim_);
-
-        window_->clear();
-        window_->draw(pointmap);
-        window_->display();
-
+        sf::Event event;
         screen newscreen;
-        if (GetNewScreen(newscreen, *window_, pointmap, winsizes_))
+        bool was_screenshot = 0;
+        while (window_->pollEvent(event))
         {
-            window_->close();
-            return;
+            if ( ( event.type == sf::Event::Closed) || 
+                 ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
+            {
+                window_->close();
+                return;
+            }
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Enter) && (! was_screenshot))
+            {
+                savePict(*window_);
+                was_screenshot = 1;
+            }
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
+            {
+                if (GetNewScreen(newscreen, *window_, pointmap, winsizes_))
+                {
+                    changeBorders(&border_, newscreen, winsizes_);
+
+                    if (newscreen.zoom > 1)
+                        itrn_max_ = (int)(itrn_max_*(1 + newscreen.zoom/delta_zoom_));
+                    else
+                        itrn_max_ = (int)(itrn_max_*(1 - 1/(newscreen.zoom*delta_zoom_ + 1)));
+
+                    DrawMandelbrot(pointmap, border_, winsizes_, itrn_max_, lim_);
+
+                    window_->clear();
+                    window_->draw(pointmap);
+                    window_->display();
+                }
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+            {
+                window_->clear();
+                window_->draw(pointmap);
+                PointTrace(sf::Mouse::getPosition(*window_), window_, border_, winsizes_, lim_);
+            }
         }
-
-        changeBorders(&border_, newscreen, winsizes_);
-
-        if (newscreen.zoom > 1)
-            itrn_max_ = (int)(itrn_max_*(1 + newscreen.zoom/delta_zoom_));
-        else
-            itrn_max_ = (int)(itrn_max_*(1 - 1/(newscreen.zoom*delta_zoom_ + 1)));
     }
 }
 
@@ -205,22 +236,8 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::V
         window.draw(pointmap);
         #endif // __linux__
 
-        if (not (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) && (end.x != -1))
-            break;
-
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if ( ( event.type == sf::Event::Closed) || 
-                 ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) )
-                return 1;
-
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Enter) && (! was_screenshot))
-            {
-                savePict(window);
-                was_screenshot = 1;
-            }
-        }
+        if (end.x != -1) break;
+        else return 0;
     }
 
 
@@ -246,7 +263,7 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::V
         newscreen.y2 = end.y;
     }
 
-    return 0;
+    return 1;
 }
 
 //------------------------------------------------------------------------------
@@ -413,6 +430,47 @@ void Mandelbrot::savePict (sf::RenderWindow& window)
     sf::Sprite sprite(screen);
     window.draw(sprite);
     window.display();
+}
+
+//------------------------------------------------------------------------------
+
+void Mandelbrot::PointTrace (sf::Vector2i point, sf::RenderWindow* window, cmplxborder border, sf::Vector2i winsizes, double lim)
+{
+    double re = border.Re_left + (border.Re_right - border.Re_left) * point.x / winsizes.x;
+    double im = border.Im_down + (border.Im_up    - border.Im_down) * point.y / winsizes.y;
+
+    double xx = re * re;
+    double yy = im * im;
+    double w  = (re + im)*(re + im);
+
+    double x1 = re;
+    double y1 = im;
+
+    for (int i = 0; (i < 1000) && ((xx + yy) <= lim); ++i)
+    {
+        double x2 = xx - yy + re;
+        double y2 = w - xx - yy + im;
+        xx = x2*x2;
+        yy = y2*y2;
+        w = (x2 + y2)*(x2 + y2);
+
+        sf::Vertex line[] =
+        {
+            sf::Vertex(sf::Vector2f((x1 - border.Re_left) / (border.Re_right - border.Re_left) * winsizes.x,
+                                    (y1 - border.Im_down) / (border.Im_up    - border.Im_down) * winsizes.y), sf::Color::White),
+
+            sf::Vertex(sf::Vector2f((x2 - border.Re_left) / (border.Re_right - border.Re_left) * winsizes.x,
+                                    (y2 - border.Im_down) / (border.Im_up    - border.Im_down) * winsizes.y), sf::Color::Black)
+        };
+
+        x1 = x2;
+        y1 = y2;
+
+        window->draw(line, 2, sf::Lines);
+            
+        ++i;
+    }
+    window->display();
 }
 
 //------------------------------------------------------------------------------
