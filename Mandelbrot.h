@@ -33,7 +33,7 @@ struct screen
     double zoom =  0;
 };
 
-struct cmplxborder
+struct cmplxborders
 {
     double Re_left  = 0;
     double Re_right = 0;
@@ -57,7 +57,7 @@ public:
 private:
 
     sf::RenderWindow* window_;
-    cmplxborder       border_;
+    cmplxborders      borders_;
     sf::Vector2i      winsizes_;
 
     size_t delta_zoom_ = 3000;
@@ -67,12 +67,12 @@ private:
     void initBorders ();
     void createWindow (size_t width, size_t height, sf::Uint32 win_style);
 
-    int       GetNewScreen   (screen& newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes);
-    void      DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim);
-    void      changeBorders  (cmplxborder* border, screen newscreen, sf::Vector2i winsizes);
-    sf::Color getColor       (int32_t itrn, int32_t itrn_max);
-    void      savePict       (sf::RenderWindow& window);
-    void      PointTrace     (sf::Vector2i point, sf::RenderWindow* window, cmplxborder border, sf::Vector2i winsizes, double lim);
+    int       GetNewScreen   (screen& newscreen, sf::VertexArray& pointmap);
+    void      DrawMandelbrot (sf::VertexArray& pointmap);
+    void      changeBorders  (screen newscreen);
+    sf::Color getColor       (int32_t itrn);
+    void      savePict       ();
+    void      PointTrace     (sf::Vector2i point);
 };
 
 //------------------------------------------------------------------------------

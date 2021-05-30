@@ -69,11 +69,11 @@ void Mandelbrot::createWindow (size_t width, size_t height, sf::Uint32 win_style
 
 void Mandelbrot::initBorders ()
 {
-    border_.Im_up   =  1.3;
-    border_.Im_down = -1.3;
+    borders_.Im_up   =  1.3;
+    borders_.Im_down = -1.3;
 
-    border_.Re_left  = -(border_.Im_up - border_.Im_down) * winsizes_.x/winsizes_.y / 5 *3;
-    border_.Re_right =  (border_.Im_up - border_.Im_down) * winsizes_.x/winsizes_.y / 5 *2;
+    borders_.Re_left  = -(borders_.Im_up - borders_.Im_down) * winsizes_.x/winsizes_.y / 5 *3;
+    borders_.Re_right =  (borders_.Im_up - borders_.Im_down) * winsizes_.x/winsizes_.y / 5 *2;
 }
 
 //------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ void Mandelbrot::run ()
 {
     sf::VertexArray pointmap(sf::Points, winsizes_.x * winsizes_.y);
 
-    DrawMandelbrot(pointmap, border_, winsizes_, itrn_max_, lim_);
+    DrawMandelbrot(pointmap);
 
     window_->clear();
     window_->draw(pointmap);
@@ -112,22 +112,22 @@ void Mandelbrot::run ()
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Enter) && (! was_screenshot))
             {
-                savePict(*window_);
+                savePict();
                 was_screenshot = 1;
             }
 
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
             {
-                if (GetNewScreen(newscreen, *window_, pointmap, winsizes_))
+                if (GetNewScreen(newscreen, pointmap))
                 {
-                    changeBorders(&border_, newscreen, winsizes_);
+                    changeBorders(newscreen);
 
                     if (newscreen.zoom > 1)
                         itrn_max_ = (int)(itrn_max_*(1 + newscreen.zoom/delta_zoom_));
                     else
                         itrn_max_ = (int)(itrn_max_*(1 - 1/(newscreen.zoom*delta_zoom_ + 1)));
 
-                    DrawMandelbrot(pointmap, border_, winsizes_, itrn_max_, lim_);
+                    DrawMandelbrot(pointmap);
 
                     window_->clear();
                     window_->draw(pointmap);
@@ -139,7 +139,7 @@ void Mandelbrot::run ()
             {
                 window_->clear();
                 window_->draw(pointmap);
-                PointTrace(sf::Mouse::getPosition(*window_), window_, border_, winsizes_, lim_);
+                PointTrace(sf::Mouse::getPosition(*window_));
             }
         }
     }
@@ -147,13 +147,10 @@ void Mandelbrot::run ()
 
 //------------------------------------------------------------------------------
 
-int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::VertexArray pointmap, sf::Vector2i winsizes)
+int Mandelbrot::GetNewScreen (screen& newscreen, sf::VertexArray& pointmap)
 {
-    assert(winsizes.x);
-    assert(winsizes.y);
-
-    int w = winsizes.x;
-    int h = winsizes.y;
+    int w = winsizes_.x;
+    int h = winsizes_.y;
 
     char was_screenshot = 0;
 
@@ -178,12 +175,12 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::V
     {
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
         {
-            start = sf::Mouse::getPosition(window);
+            start = sf::Mouse::getPosition(*window_);
             rectangle.setPosition(start.x, start.y);
 
             while (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
             {
-                end = sf::Mouse::getPosition(window) + sf::Vector2i(1, 1);
+                end = sf::Mouse::getPosition(*window_) + sf::Vector2i(1, 1);
 
                 if ((abs(end.x - start.x) > 8) && (abs(end.y - start.y) > 8))
                 {
@@ -222,18 +219,18 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::V
                     #ifdef __linux__
                     window.draw(sprite);
                     #else
-                    window.draw(pointmap);
+                    window_->draw(pointmap);
                     #endif // __linux__
 
-                    window.draw(rectangle);
-                    window.display();
+                    window_->draw(rectangle);
+                    window_->display();
                 }
                 else end.x = -1;
             }
         }
 
         #ifndef __linux__
-        window.draw(pointmap);
+        window_->draw(pointmap);
         #endif // __linux__
 
         if (end.x != -1) break;
@@ -268,49 +265,43 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::RenderWindow& window, sf::V
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::changeBorders (cmplxborder* border, screen newscreen, sf::Vector2i winsizes)
+void Mandelbrot::changeBorders (screen newscreen)
 {
-    assert(border != nullptr);
-    assert(winsizes.x);
-    assert(winsizes.y);
-
-    double releft  = border->Re_left;
-    double reright = border->Re_right;
-    double imup    = border->Im_up;
-    double imdown  = border->Im_down;
+    double releft  = borders_.Re_left;
+    double reright = borders_.Re_right;
+    double imup    = borders_.Im_up;
+    double imdown  = borders_.Im_down;
 
     if (newscreen.zoom > 1)
     {
-        border->Re_left  = releft + (reright - releft) * newscreen.x1 / winsizes.x;
-        border->Re_right = releft + (reright - releft) * newscreen.x2 / winsizes.x;
-        border->Im_down  = imdown + (imup    - imdown) * newscreen.y1 / winsizes.y;
-        border->Im_up    = imdown + (imup    - imdown) * newscreen.y2 / winsizes.y;
+        borders_.Re_left  = releft + (reright - releft) * newscreen.x1 / winsizes_.x;
+        borders_.Re_right = releft + (reright - releft) * newscreen.x2 / winsizes_.x;
+        borders_.Im_down  = imdown + (imup    - imdown) * newscreen.y1 / winsizes_.y;
+        borders_.Im_up    = imdown + (imup    - imdown) * newscreen.y2 / winsizes_.y;
     }
     else
     {
-        border->Re_left  = releft  - (reright - releft) *               newscreen.x1  / (newscreen.x2 - newscreen.x1);
-        border->Re_right = reright + (reright - releft) * (winsizes.x - newscreen.x2) / (newscreen.x2 - newscreen.x1);
-        border->Im_down  = imdown  - (imup    - imdown) *               newscreen.y1  / (newscreen.y2 - newscreen.y1);
-        border->Im_up    = imup    + (imup    - imdown) * (winsizes.y - newscreen.y2) / (newscreen.y2 - newscreen.y1);
+        borders_.Re_left  = releft  - (reright - releft) *                newscreen.x1  / (newscreen.x2 - newscreen.x1);
+        borders_.Re_right = reright + (reright - releft) * (winsizes_.x - newscreen.x2) / (newscreen.x2 - newscreen.x1);
+        borders_.Im_down  = imdown  - (imup    - imdown) *                newscreen.y1  / (newscreen.y2 - newscreen.y1);
+        borders_.Im_up    = imup    + (imup    - imdown) * (winsizes_.y - newscreen.y2) / (newscreen.y2 - newscreen.y1);
     }
 }
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, sf::Vector2i winsizes, int itrn_max, double lim)
+void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap)
 {
-    assert(winsizes.x);
-    assert(winsizes.y);
     assert(itrn_max);
     assert(lim);
 
-    int width  = winsizes.x;
-    int height = winsizes.y;
+    int width  = winsizes_.x;
+    int height = winsizes_.y;
 
-    double re_step = (border.Re_right - border.Re_left) / width;
-    double im_step = (border.Im_up    - border.Im_down) / height;
+    double re_step = (borders_.Re_right - borders_.Re_left) / width;
+    double im_step = (borders_.Im_up    - borders_.Im_down) / height;
 
-    __m256d _m_lim = _mm256_set1_pd(lim);
+    __m256d _m_lim = _mm256_set1_pd(lim_);
     __m128i ones   = _mm_set1_epi32(1);
     __m128i zeros  = _mm_set1_epi32(0);
 
@@ -320,7 +311,7 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
     __m128i mask32_128_4 = _mm_setr_epi32( 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 );
 
 
-    double im0 = border.Im_down;
+    double im0 = borders_.Im_down;
 
     int x_offset = 0;
 
@@ -331,7 +322,7 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
         #pragma omp parallel for
         for (int x = 0; x < width; x += 4)
         {
-            double re0 = x * re_step + border.Re_left;
+            double re0 = x * re_step + borders_.Re_left;
 
             __m256d _m_re0 = { re0, re0 + re_step, re0 + 2*re_step, re0 + 3*re_step };
 
@@ -343,7 +334,7 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
             __m128i iterations = _mm_set1_epi32(0);
             __m128i iter_mask  = _mm_set1_epi32(0xFFFFFFFF);
 
-            for (int i = 0; i < itrn_max; ++i)
+            for (int i = 0; i < itrn_max_; ++i)
             {
                 __m256d _m_re1 = _mm256_add_pd(_mm256_sub_pd(_m_re2, _m_im2), _m_re0);
                 __m256d _m_im1 = _mm256_add_pd(_mm256_sub_pd(_mm256_sub_pd(_m_s, _m_re2), _m_im2), _m_im0);
@@ -370,7 +361,7 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
             for (int i = 0; i < 4; ++i)
             {
                 pointmap[x_offset + x + i].position = sf::Vector2f(x + i, y);
-                pointmap[x_offset + x + i].color = getColor(*((int32_t*)&iterations + i), itrn_max);
+                pointmap[x_offset + x + i].color = getColor(*((int32_t*)&iterations + i));
             }
         }
     }
@@ -378,9 +369,9 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap, cmplxborder border, 
 
 //------------------------------------------------------------------------------
 
-sf::Color Mandelbrot::getColor (int32_t itrn, int32_t itrn_max)
+sf::Color Mandelbrot::getColor (int32_t itrn)
 {
-    if (itrn < itrn_max)
+    if (itrn < itrn_max_)
     {
         itrn = itrn*4 % 1530;
 
@@ -397,7 +388,7 @@ sf::Color Mandelbrot::getColor (int32_t itrn, int32_t itrn_max)
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::savePict (sf::RenderWindow& window)
+void Mandelbrot::savePict ()
 {
     static int shot_num = 0;
     char filename[256] = "screenshot";
@@ -410,34 +401,34 @@ void Mandelbrot::savePict (sf::RenderWindow& window)
     strcat(filename, ".png");
 
     sf::Texture screen;
-    screen.create(window.getSize().x, window.getSize().y);
-    screen.update(window);
+    screen.create(window_->getSize().x, window_->getSize().y);
+    screen.update(*window_);
 
     sf::RectangleShape rectangle;
     rectangle.setPosition(0, 0);
-    rectangle.setSize(sf::Vector2f(window.getSize()));
+    rectangle.setSize(sf::Vector2f(window_->getSize()));
 
     if (screen.copyToImage().saveToFile(filename))
         rectangle.setFillColor(sf::Color(10, 10, 10, 150));  // grey screen if ok
     else
         rectangle.setFillColor(sf::Color(255, 10, 10, 200)); // red screen if error
 
-    window.draw(rectangle);
-    window.display();
+    window_->draw(rectangle);
+    window_->display();
 
     sf::sleep(sf::milliseconds(300));
 
     sf::Sprite sprite(screen);
-    window.draw(sprite);
-    window.display();
+    window_->draw(sprite);
+    window_->display();
 }
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::PointTrace (sf::Vector2i point, sf::RenderWindow* window, cmplxborder border, sf::Vector2i winsizes, double lim)
+void Mandelbrot::PointTrace (sf::Vector2i point)
 {
-    double re = border.Re_left + (border.Re_right - border.Re_left) * point.x / winsizes.x;
-    double im = border.Im_down + (border.Im_up    - border.Im_down) * point.y / winsizes.y;
+    double re = borders_.Re_left + (borders_.Re_right - borders_.Re_left) * point.x / winsizes_.x;
+    double im = borders_.Im_down + (borders_.Im_up    - borders_.Im_down) * point.y / winsizes_.y;
 
     double xx = re * re;
     double yy = im * im;
@@ -446,7 +437,7 @@ void Mandelbrot::PointTrace (sf::Vector2i point, sf::RenderWindow* window, cmplx
     double x1 = re;
     double y1 = im;
 
-    for (int i = 0; (i < 1000) && ((xx + yy) <= lim); ++i)
+    for (int i = 0; (i < 1000) && ((xx + yy) <= lim_); ++i)
     {
         double x2 = xx - yy + re;
         double y2 = w - xx - yy + im;
@@ -456,21 +447,21 @@ void Mandelbrot::PointTrace (sf::Vector2i point, sf::RenderWindow* window, cmplx
 
         sf::Vertex line[] =
         {
-            sf::Vertex(sf::Vector2f((x1 - border.Re_left) / (border.Re_right - border.Re_left) * winsizes.x,
-                                    (y1 - border.Im_down) / (border.Im_up    - border.Im_down) * winsizes.y), sf::Color::White),
+            sf::Vertex(sf::Vector2f((x1 - borders_.Re_left) / (borders_.Re_right - borders_.Re_left) * winsizes_.x,
+                                    (y1 - borders_.Im_down) / (borders_.Im_up    - borders_.Im_down) * winsizes_.y), sf::Color::White),
 
-            sf::Vertex(sf::Vector2f((x2 - border.Re_left) / (border.Re_right - border.Re_left) * winsizes.x,
-                                    (y2 - border.Im_down) / (border.Im_up    - border.Im_down) * winsizes.y), sf::Color::Black)
+            sf::Vertex(sf::Vector2f((x2 - borders_.Re_left) / (borders_.Re_right - borders_.Re_left) * winsizes_.x,
+                                    (y2 - borders_.Im_down) / (borders_.Im_up    - borders_.Im_down) * winsizes_.y), sf::Color::Black)
         };
 
         x1 = x2;
         y1 = y2;
 
-        window->draw(line, 2, sf::Lines);
+        window_->draw(line, 2, sf::Lines);
             
         ++i;
     }
-    window->display();
+    window_->display();
 }
 
 //------------------------------------------------------------------------------
