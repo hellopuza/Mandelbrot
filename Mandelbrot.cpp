@@ -160,7 +160,7 @@ int Mandelbrot::GetNewScreen (screen& newscreen)
 
     sf::Texture screen;
     screen.create(w, h);
-    screen.update(window);
+    screen.update(*window_);
 
     sf::Sprite sprite(screen);
 
@@ -212,7 +212,7 @@ int Mandelbrot::GetNewScreen (screen& newscreen)
                     rectangle.setSize(sf::Vector2f(end - start));
 
                     #ifdef __linux__
-                    window.draw(sprite);
+                    window_->draw(sprite);
                     #else
                     window_->draw(*pointmap_);
                     #endif // __linux__
@@ -287,8 +287,8 @@ void Mandelbrot::changeBorders (screen newscreen)
 
 void Mandelbrot::DrawMandelbrot ()
 {
-    assert(itrn_max);
-    assert(lim);
+    assert(itrn_max_);
+    assert(lim_);
 
     int width  = winsizes_.x;
     int height = winsizes_.y;
