@@ -15,14 +15,16 @@
 Mandelbrot::Mandelbrot () :
     winsizes_ ({DEFAULT_WIDTH, DEFAULT_HEIGHT})
 {
-    createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
-
+    pointmap_ = new sf::VertexArray(sf::Points, winsizes_.x * winsizes_.y);
+    window_ = new sf::RenderWindow(sf::VideoMode(winsizes_.x, winsizes_.y), title_string, sf::Style::Close);
+    
     initBorders();
 }
 
 //------------------------------------------------------------------------------
 
-Mandelbrot::Mandelbrot (size_t width, size_t height)
+Mandelbrot::Mandelbrot (size_t width, size_t height) :
+    winsizes_ ({(int)width, (int)height})
 {
     assert(width);
     assert(height);
@@ -30,10 +32,8 @@ Mandelbrot::Mandelbrot (size_t width, size_t height)
     assert(width  < sf::VideoMode::getDesktopMode().width);
     assert(height < sf::VideoMode::getDesktopMode().height);
 
-    winsizes_.x = width;
-    winsizes_.y = height;
-
-    createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
+    pointmap_ = new sf::VertexArray(sf::Points, winsizes_.x * winsizes_.y);
+    window_ = new sf::RenderWindow(sf::VideoMode(winsizes_.x, winsizes_.y), title_string, sf::Style::Close);
 
     initBorders();
 }
@@ -43,26 +43,20 @@ Mandelbrot::Mandelbrot (size_t width, size_t height)
 Mandelbrot::Mandelbrot (char fullscreen_mode) :
     winsizes_ ({DEFAULT_WIDTH, DEFAULT_HEIGHT})
 {
+    sf::Uint32 win_style = sf::Style::Close;
+
     if (fullscreen_mode)
     {
         winsizes_.x = sf::VideoMode::getDesktopMode().width;
         winsizes_.y = sf::VideoMode::getDesktopMode().height;
 
-        createWindow(winsizes_.x, winsizes_.y, sf::Style::Fullscreen | sf::Style::Close);
+        win_style =  sf::Style::Fullscreen | sf::Style::Close;
     }
-    else
-        createWindow(winsizes_.x, winsizes_.y, sf::Style::Close);
+
+    pointmap_ = new sf::VertexArray(sf::Points, winsizes_.x * winsizes_.y);
+    window_ = new sf::RenderWindow(sf::VideoMode(winsizes_.x, winsizes_.y), title_string, win_style);
 
     initBorders();
-}
-
-//------------------------------------------------------------------------------
-
-void Mandelbrot::createWindow (size_t width, size_t height, sf::Uint32 win_style)
-{
-    sf::String title_string = "Mandelbrot Set Plotter";
-    window_ = new sf::RenderWindow(sf::VideoMode(width, height), title_string, win_style);
-    window_->setVerticalSyncEnabled(true);
 }
 
 //------------------------------------------------------------------------------
@@ -81,6 +75,7 @@ void Mandelbrot::initBorders ()
 Mandelbrot::~Mandelbrot ()
 {
     if (window_->isOpen()) window_->close();
+    delete pointmap_;
     delete window_;
 }
 
@@ -88,18 +83,18 @@ Mandelbrot::~Mandelbrot ()
 
 void Mandelbrot::run ()
 {
-    sf::VertexArray pointmap(sf::Points, winsizes_.x * winsizes_.y);
+    window_->setVerticalSyncEnabled(true);
 
-    DrawMandelbrot(pointmap);
+    DrawMandelbrot();
 
     window_->clear();
-    window_->draw(pointmap);
+    window_->draw(*pointmap_);
     window_->display();
 
     while (window_->isOpen())
     {
         sf::Event event;
-        screen newscreen;
+        screen newscreen = {};
         bool was_screenshot = 0;
         while (window_->pollEvent(event))
         {
@@ -118,7 +113,7 @@ void Mandelbrot::run ()
 
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
             {
-                if (GetNewScreen(newscreen, pointmap))
+                if (GetNewScreen(newscreen))
                 {
                     changeBorders(newscreen);
 
@@ -127,10 +122,10 @@ void Mandelbrot::run ()
                     else
                         itrn_max_ = (int)(itrn_max_*(1 - 1/(newscreen.zoom*delta_zoom_ + 1)));
 
-                    DrawMandelbrot(pointmap);
+                    DrawMandelbrot();
 
                     window_->clear();
-                    window_->draw(pointmap);
+                    window_->draw(*pointmap_);
                     window_->display();
                 }
             }
@@ -138,7 +133,7 @@ void Mandelbrot::run ()
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             {
                 window_->clear();
-                window_->draw(pointmap);
+                window_->draw(*pointmap_);
                 PointTrace(sf::Mouse::getPosition(*window_));
             }
         }
@@ -147,7 +142,7 @@ void Mandelbrot::run ()
 
 //------------------------------------------------------------------------------
 
-int Mandelbrot::GetNewScreen (screen& newscreen, sf::VertexArray& pointmap)
+int Mandelbrot::GetNewScreen (screen& newscreen)
 {
     int w = winsizes_.x;
     int h = winsizes_.y;
@@ -219,7 +214,7 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::VertexArray& pointmap)
                     #ifdef __linux__
                     window.draw(sprite);
                     #else
-                    window_->draw(pointmap);
+                    window_->draw(*pointmap_);
                     #endif // __linux__
 
                     window_->draw(rectangle);
@@ -230,7 +225,7 @@ int Mandelbrot::GetNewScreen (screen& newscreen, sf::VertexArray& pointmap)
         }
 
         #ifndef __linux__
-        window_->draw(pointmap);
+        window_->draw(*pointmap_);
         #endif // __linux__
 
         if (end.x != -1) break;
@@ -290,7 +285,7 @@ void Mandelbrot::changeBorders (screen newscreen)
 
 //------------------------------------------------------------------------------
 
-void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap)
+void Mandelbrot::DrawMandelbrot ()
 {
     assert(itrn_max);
     assert(lim);
@@ -360,8 +355,8 @@ void Mandelbrot::DrawMandelbrot (sf::VertexArray& pointmap)
 
             for (int i = 0; i < 4; ++i)
             {
-                pointmap[x_offset + x + i].position = sf::Vector2f(x + i, y);
-                pointmap[x_offset + x + i].color = getColor(*((int32_t*)&iterations + i));
+                (*pointmap_)[x_offset + x + i].position = sf::Vector2f(x + i, y);
+                (*pointmap_)[x_offset + x + i].color = getColor(*((int32_t*)&iterations + i));
             }
         }
     }
@@ -399,6 +394,8 @@ void Mandelbrot::savePict ()
     strcat(filename, shot_num_str);
     strcat(filename, ")");
     strcat(filename, ".png");
+    
+    window_->draw(*pointmap_);
 
     sf::Texture screen;
     screen.create(window_->getSize().x, window_->getSize().y);

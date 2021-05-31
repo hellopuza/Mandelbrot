@@ -24,6 +24,8 @@
 const int DEFAULT_WIDTH  = 640;
 const int DEFAULT_HEIGHT = 480;
 
+const sf::String title_string = "Mandelbrot Set Plotter";
+
 struct screen
 {
     int    x1   = -1;
@@ -52,11 +54,12 @@ public:
     Mandelbrot (size_t width, size_t height);
    ~Mandelbrot ();
 
-    void run();
+    void run ();
 
 private:
 
-    sf::RenderWindow* window_;
+    sf::RenderWindow* window_ = nullptr;
+    sf::VertexArray*  pointmap_ = nullptr;
     cmplxborders      borders_;
     sf::Vector2i      winsizes_;
 
@@ -65,10 +68,9 @@ private:
     size_t itrn_max_   = 3000;
 
     void initBorders ();
-    void createWindow (size_t width, size_t height, sf::Uint32 win_style);
 
-    int       GetNewScreen   (screen& newscreen, sf::VertexArray& pointmap);
-    void      DrawMandelbrot (sf::VertexArray& pointmap);
+    int       GetNewScreen   (screen& newscreen);
+    void      DrawMandelbrot ();
     void      changeBorders  (screen newscreen);
     sf::Color getColor       (int32_t itrn);
     void      savePict       ();
