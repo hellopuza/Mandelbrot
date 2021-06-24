@@ -272,14 +272,16 @@ void Mandelbrot::changeBorders (screen newscreen)
         borders_.Re_left  = releft + (reright - releft) * newscreen.x1 / winsizes_.x;
         borders_.Re_right = releft + (reright - releft) * newscreen.x2 / winsizes_.x;
         borders_.Im_down  = imdown + (imup    - imdown) * newscreen.y1 / winsizes_.y;
-        borders_.Im_up    = imdown + (imup    - imdown) * newscreen.y2 / winsizes_.y;
+
+        borders_.Im_up = borders_.Im_down + (borders_.Re_right - borders_.Re_left) * winsizes_.y / winsizes_.x;
     }
     else
     {
         borders_.Re_left  = releft  - (reright - releft) *                newscreen.x1  / (newscreen.x2 - newscreen.x1);
         borders_.Re_right = reright + (reright - releft) * (winsizes_.x - newscreen.x2) / (newscreen.x2 - newscreen.x1);
         borders_.Im_down  = imdown  - (imup    - imdown) *                newscreen.y1  / (newscreen.y2 - newscreen.y1);
-        borders_.Im_up    = imup    + (imup    - imdown) * (winsizes_.y - newscreen.y2) / (newscreen.y2 - newscreen.y1);
+
+        borders_.Im_up = borders_.Im_down + (borders_.Re_right - borders_.Re_left) * winsizes_.y / winsizes_.x;
     }
 }
 
