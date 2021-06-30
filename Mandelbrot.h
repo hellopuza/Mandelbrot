@@ -6,7 +6,7 @@
     * Author:      Artem Puzankov                                              *
     * Email:       puzankov.ao@phystech.edu                                    *
     * GitHub:      https://github.com/hellopuza                                *
-    * Copyright © 2021 Artem Puzankov. All rights reserved.                    *
+    * Copyright Â© 2021 Artem Puzankov. All rights reserved.                    *
     *///------------------------------------------------------------------------
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -26,7 +26,7 @@ const int DEFAULT_HEIGHT = 480;
 
 const sf::String title_string = "Mandelbrot Set Plotter";
 
-struct screen
+struct Screen
 {
     int    x1   = -1;
     int    x2   = -1;
@@ -35,7 +35,7 @@ struct screen
     double zoom =  0;
 };
 
-struct cmplxborders
+struct ComplexFrame
 {
     double Re_left  = 0;
     double Re_right = 0;
@@ -50,8 +50,6 @@ class Mandelbrot
 public:
 
     Mandelbrot ();
-    Mandelbrot (char fullscreen_mode);
-    Mandelbrot (size_t width, size_t height);
    ~Mandelbrot ();
 
     void run ();
@@ -60,21 +58,21 @@ private:
 
     sf::RenderWindow* window_ = nullptr;
     sf::VertexArray*  pointmap_ = nullptr;
-    cmplxborders      borders_;
+    ComplexFrame      borders_;
     sf::Vector2i      winsizes_;
 
     size_t delta_zoom_ = 3000;
     double lim_        = 100;
     size_t itrn_max_   = 3000;
 
-    void initBorders ();
-
-    int       GetNewScreen   (screen& newscreen);
-    void      DrawMandelbrot ();
-    void      changeBorders  (screen newscreen);
-    sf::Color getColor       (int32_t itrn);
-    void      savePict       ();
-    void      PointTrace     (sf::Vector2i point);
+    int       GetNewScreen     (Screen& newscreen);
+    void      DrawMandelbrot   ();
+    void      changeBorders    (Screen newscreen);
+    sf::Color getColor         (int32_t itrn);
+    void      savePict         ();
+    void      PointTrace       (sf::Vector2i point);
+    void      updateWinSizes   (size_t width, size_t height);
+    void      toggleFullScreen ();
 };
 
 //------------------------------------------------------------------------------
