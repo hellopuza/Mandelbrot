@@ -27,14 +27,8 @@ $ make
 **Therminal**
 
 ```console
-# if you want to create default window
+# if you want to run the program
 $ ./Mandelbrot
-
-# if you want to create fullscreen window
-$ ./Mandelbrot 1
-
-# if you want to create window with custom sizes
-$ ./Mandelbrot 123 456
 ```
 
 **How to use**
@@ -43,4 +37,5 @@ $ ./Mandelbrot 123 456
 - **Zoom out:** draw a rectangle with the `right mouse` button in the area you want to zoom out. The rectangle will be red.
 - **Take a screenshot:** Press `Enter`. The screenshot will be saved as "screenshot(<number>).png" in your directory.
 - **Point trace:** Press `Space`.
+- **Fullscreen mode:** Press `F11`.
 - **Exit the program:** Press `Esc` or close window.
